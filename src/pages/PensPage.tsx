@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { supabase, Pen } from '../lib/supabase';
-import { Plus, Edit, Trash2, X } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from "react";
+import { supabase, Pen } from "../lib/supabase";
+import { Plus, Edit, Trash2, X } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function PensPage() {
   const [pens, setPens] = useState<Pen[]>([]);
@@ -17,33 +17,30 @@ export default function PensPage() {
   const loadPens = async () => {
     try {
       const { data, error } = await supabase
-        .from('pens')
-        .select('*')
-        .order('name');
+        .from("pens")
+        .select("*")
+        .order("name");
 
       if (error) throw error;
       setPens(data || []);
     } catch (error) {
-      console.error('Error loading pens:', error);
+      console.error("Error loading pens:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta baia?')) return;
+    if (!window.confirm("Tem certeza que deseja excluir esta baia?")) return;
 
     try {
-      const { error } = await supabase
-        .from('pens')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from("pens").delete().eq("id", id);
 
       if (error) throw error;
       loadPens();
     } catch (error) {
-      console.error('Error deleting pen:', error);
-      alert('Erro ao excluir baia');
+      console.error("Error deleting pen:", error);
+      alert("Erro ao excluir baia");
     }
   };
 
@@ -54,18 +51,16 @@ export default function PensPage() {
           <h2 className="text-2xl font-bold text-gray-800">Baias / Piquetes</h2>
           <p className="text-gray-600">Gerencie as baias e piquetes</p>
         </div>
-        {profile?.role === 'admin' && (
-          <button
-            onClick={() => {
-              setEditingPen(null);
-              setShowModal(true);
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Nova Baia</span>
-          </button>
-        )}
+        <button
+          onClick={() => {
+            setEditingPen(null);
+            setShowModal(true);
+          }}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Nova Baia</span>
+        </button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
@@ -81,11 +76,16 @@ export default function PensPage() {
               </div>
             ) : (
               pens.map((pen) => (
-                <div key={pen.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition">
+                <div
+                  key={pen.id}
+                  className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
+                >
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">{pen.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {pen.name}
+                    </h3>
                     <div className="flex items-center space-x-2">
-                      {profile?.role === 'admin' && (
+                      {profile?.role === "admin" && (
                         <>
                           <button
                             onClick={() => {
@@ -110,22 +110,32 @@ export default function PensPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Capacidade:</span>
-                      <span className="font-medium">{pen.capacity} animais</span>
+                      <span className="font-medium">
+                        {pen.capacity} animais
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Ocupação:</span>
-                      <span className="font-medium">{pen.current_occupancy} animais</span>
+                      <span className="font-medium">
+                        {pen.current_occupancy} animais
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Custo Diário:</span>
-                      <span className="font-medium">R$ {pen.daily_cost.toFixed(2)}</span>
+                      <span className="font-medium">
+                        R$ {pen.daily_cost.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Status:</span>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        pen.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {pen.active ? 'Ativa' : 'Inativa'}
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          pen.active
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {pen.active ? "Ativa" : "Inativa"}
                       </span>
                     </div>
                   </div>
@@ -134,11 +144,21 @@ export default function PensPage() {
                     <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
                         className="bg-green-600 h-full transition-all"
-                        style={{ width: `${Math.min((pen.current_occupancy / pen.capacity) * 100, 100)}%` }}
+                        style={{
+                          width: `${Math.min(
+                            (pen.current_occupancy / pen.capacity) * 100,
+                            100
+                          )}%`,
+                        }}
                       ></div>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {pen.capacity > 0 ? Math.round((pen.current_occupancy / pen.capacity) * 100) : 0}% ocupada
+                      {pen.capacity > 0
+                        ? Math.round(
+                            (pen.current_occupancy / pen.capacity) * 100
+                          )
+                        : 0}
+                      % ocupada
                     </p>
                   </div>
                 </div>
@@ -169,14 +189,14 @@ export default function PensPage() {
 function PenModal({
   pen,
   onClose,
-  onSave
+  onSave,
 }: {
   pen: Pen | null;
   onClose: () => void;
   onSave: () => void;
 }) {
   const [formData, setFormData] = useState({
-    name: pen?.name || '',
+    name: pen?.name || "",
     capacity: pen?.capacity || 0,
     current_occupancy: pen?.current_occupancy || 0,
     daily_cost: pen?.daily_cost || 0,
@@ -191,21 +211,19 @@ function PenModal({
     try {
       if (pen) {
         const { error } = await supabase
-          .from('pens')
+          .from("pens")
           .update(formData)
-          .eq('id', pen.id);
+          .eq("id", pen.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('pens')
-          .insert([formData]);
+        const { error } = await supabase.from("pens").insert([formData]);
         if (error) throw error;
       }
 
       onSave();
     } catch (error) {
-      console.error('Error saving pen:', error);
-      alert('Erro ao salvar baia');
+      console.error("Error saving pen:", error);
+      alert("Erro ao salvar baia");
     } finally {
       setSaving(false);
     }
@@ -216,9 +234,12 @@ function PenModal({
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-xl font-semibold">
-            {pen ? 'Editar Baia' : 'Nova Baia'}
+            {pen ? "Editar Baia" : "Nova Baia"}
           </h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -231,7 +252,9 @@ function PenModal({
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="Ex: Baia 1, Piquete A"
               required
@@ -245,7 +268,9 @@ function PenModal({
             <input
               type="number"
               value={formData.capacity}
-              onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
+              onChange={(e) =>
+                setFormData({ ...formData, capacity: parseInt(e.target.value) })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
               min="0"
@@ -259,7 +284,12 @@ function PenModal({
             <input
               type="number"
               value={formData.current_occupancy}
-              onChange={(e) => setFormData({ ...formData, current_occupancy: parseInt(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  current_occupancy: parseInt(e.target.value),
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               min="0"
             />
@@ -273,7 +303,12 @@ function PenModal({
               type="number"
               step="0.01"
               value={formData.daily_cost}
-              onChange={(e) => setFormData({ ...formData, daily_cost: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  daily_cost: parseFloat(e.target.value),
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             />
@@ -284,10 +319,14 @@ function PenModal({
               <input
                 type="checkbox"
                 checked={formData.active}
-                onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, active: e.target.checked })
+                }
                 className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
               />
-              <span className="text-sm font-medium text-gray-700">Baia Ativa</span>
+              <span className="text-sm font-medium text-gray-700">
+                Baia Ativa
+              </span>
             </label>
           </div>
 
@@ -304,7 +343,7 @@ function PenModal({
               disabled={saving}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50"
             >
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </form>
