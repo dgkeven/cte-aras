@@ -209,21 +209,77 @@ function PenModal({
     setSaving(true);
 
     try {
+      // Validar e preparar os dados
+      const data = {
+        name: formData.name.trim(),
+        capacity: parseInt(String(formData.capacity)) || 0,
+        current_occupancy: parseInt(String(formData.current_occupancy)) || 0,
+        daily_cost: parseFloat(String(formData.daily_cost)) || 0,
+        active: formData.active,
+      };
+
+      // Validações básicas
+      if (!data.name) {
+        alert("O nome da baia é obrigatório");
+        setSaving(false);
+        return;
+      }
+
+      if (data.capacity < 0) {
+        alert("A capacidade não pode ser negativa");
+        setSaving(false);
+        return;
+      }
+
+      if (data.current_occupancy < 0) {
+        alert("A ocupação atual não pode ser negativa");
+        setSaving(false);
+        return;
+      }
+
+      if (data.current_occupancy > data.capacity) {
+        alert("A ocupação atual não pode ser maior que a capacidade");
+        setSaving(false);
+        return;
+      }
+
       if (pen) {
         const { error } = await supabase
           .from("pens")
-          .update(formData)
+          .update(data)
           .eq("id", pen.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("pens").insert([formData]);
+        const { error } = await supabase.from("pens").insert([data]);
         if (error) throw error;
       }
 
       onSave();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving pen:", error);
-      alert("Erro ao salvar baia");
+
+      // Mostrar mensagem de erro mais específica
+      let errorMessage = "Erro ao salvar baia";
+
+      if (error?.message) {
+        if (
+          error.message.includes("duplicate key") ||
+          error.message.includes("unique")
+        ) {
+          errorMessage =
+            "Já existe uma baia com este nome. Por favor, escolha outro nome.";
+        } else if (
+          error.message.includes("permission") ||
+          error.message.includes("policy")
+        ) {
+          errorMessage =
+            "Você não tem permissão para realizar esta ação. Apenas administradores podem gerenciar baias.";
+        } else {
+          errorMessage = `Erro: ${error.message}`;
+        }
+      }
+
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -267,9 +323,13 @@ function PenModal({
             </label>
             <input
               type="number"
-              value={formData.capacity}
+              value={formData.capacity === 0 ? 0 : formData.capacity || ""}
               onChange={(e) =>
-                setFormData({ ...formData, capacity: parseInt(e.target.value) })
+                setFormData({
+                  ...formData,
+                  capacity:
+                    e.target.value === "" ? 0 : parseInt(e.target.value) || 0,
+                })
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
@@ -283,11 +343,16 @@ function PenModal({
             </label>
             <input
               type="number"
-              value={formData.current_occupancy}
+              value={
+                formData.current_occupancy === 0
+                  ? 0
+                  : formData.current_occupancy || ""
+              }
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  current_occupancy: parseInt(e.target.value),
+                  current_occupancy:
+                    e.target.value === "" ? 0 : parseInt(e.target.value) || 0,
                 })
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -302,15 +367,17 @@ function PenModal({
             <input
               type="number"
               step="0.01"
-              value={formData.daily_cost}
+              value={formData.daily_cost === 0 ? 0 : formData.daily_cost || ""}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  daily_cost: parseFloat(e.target.value),
+                  daily_cost:
+                    e.target.value === "" ? 0 : parseFloat(e.target.value) || 0,
                 })
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
+              min="0"
             />
           </div>
 

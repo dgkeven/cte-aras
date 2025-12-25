@@ -302,8 +302,14 @@ function AnimalModal({
     }
   };
 
-  const maleAnimals = animals.filter(a => a.sex === 'male');
-  const femaleAnimals = animals.filter(a => a.sex === 'female');
+  // Filtrar animais disponíveis para seleção como pai/mãe
+  // Excluir o animal atual se estiver editando (para evitar referências circulares)
+  const maleAnimals = animals.filter(a => 
+    a.sex === 'male' && (!animal || a.id !== animal.id)
+  );
+  const femaleAnimals = animals.filter(a => 
+    a.sex === 'female' && (!animal || a.id !== animal.id)
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -388,21 +394,6 @@ function AnimalModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as Animal['status'] })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="active">Ativo</option>
-                <option value="sold">Vendido</option>
-                <option value="dead">Morto</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Pai
               </label>
               <select
@@ -411,9 +402,13 @@ function AnimalModal({
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="">Selecione o pai</option>
-                {maleAnimals.map(a => (
-                  <option key={a.id} value={a.id}>{a.name} ({a.identification_number})</option>
-                ))}
+                {maleAnimals.length === 0 ? (
+                  <option value="" disabled>Nenhum animal macho cadastrado</option>
+                ) : (
+                  maleAnimals.map(a => (
+                    <option key={a.id} value={a.id}>{a.name} ({a.identification_number})</option>
+                  ))
+                )}
               </select>
             </div>
 
@@ -427,9 +422,28 @@ function AnimalModal({
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="">Selecione a mãe</option>
-                {femaleAnimals.map(a => (
-                  <option key={a.id} value={a.id}>{a.name} ({a.identification_number})</option>
-                ))}
+                {femaleAnimals.length === 0 ? (
+                  <option value="" disabled>Nenhum animal fêmea cadastrado</option>
+                ) : (
+                  femaleAnimals.map(a => (
+                    <option key={a.id} value={a.id}>{a.name} ({a.identification_number})</option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as Animal['status'] })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="active">Ativo</option>
+                <option value="sold">Vendido</option>
+                <option value="dead">Morto</option>
               </select>
             </div>
 

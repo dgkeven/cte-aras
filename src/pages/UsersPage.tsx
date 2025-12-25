@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase, Profile } from '../lib/supabase';
-import { Plus, X, UserCog } from 'lucide-react';
+import { Plus, X, UserCog, Edit } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function UsersPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const { profile } = useAuth();
 
   useEffect(() => {
@@ -68,12 +69,13 @@ export default function UsersPage() {
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Função</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Data de Criação</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {profiles.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="text-center py-8 text-gray-500">
+                    <td colSpan={4} className="text-center py-8 text-gray-500">
                       Nenhum usuário cadastrado
                     </td>
                   </tr>
@@ -91,6 +93,18 @@ export default function UsersPage() {
                       <td className="py-3 px-4 text-sm text-gray-600">
                         {new Date(user.created_at).toLocaleDateString('pt-BR')}
                       </td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={() => {
+                            setEditingProfile(user);
+                            setShowModal(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-700"
+                          title="Editar usuário"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -102,9 +116,14 @@ export default function UsersPage() {
 
       {showModal && (
         <UserModal
-          onClose={() => setShowModal(false)}
+          profile={editingProfile}
+          onClose={() => {
+            setShowModal(false);
+            setEditingProfile(null);
+          }}
           onSave={() => {
             setShowModal(false);
+            setEditingProfile(null);
             loadProfiles();
           }}
         />
@@ -114,9 +133,11 @@ export default function UsersPage() {
 }
 
 function UserModal({
+  profile,
   onClose,
   onSave
 }: {
+  profile?: Profile | null;
   onClose: () => void;
   onSave: () => void;
 }) {
@@ -124,8 +145,8 @@ function UserModal({
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    full_name: '',
-    role: 'employee' as 'admin' | 'employee',
+    full_name: profile?.full_name || '',
+    role: (profile?.role || 'employee') as 'admin' | 'employee',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -136,11 +157,26 @@ function UserModal({
     setSaving(true);
 
     try {
-      await signUp(formData.email, formData.password, formData.full_name, formData.role);
+      if (profile) {
+        // Atualizar usuário existente
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            full_name: formData.full_name,
+            role: formData.role,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', profile.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Criar novo usuário
+        await signUp(formData.email, formData.password, formData.full_name, formData.role);
+      }
       onSave();
     } catch (err: any) {
-      console.error('Error creating user:', err);
-      setError(err.message || 'Erro ao criar usuário');
+      console.error('Error saving user:', err);
+      setError(err.message || `Erro ao ${profile ? 'atualizar' : 'criar'} usuário`);
     } finally {
       setSaving(false);
     }
@@ -150,7 +186,9 @@ function UserModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="text-xl font-semibold">Novo Usuário</h3>
+          <h3 className="text-xl font-semibold">
+            {profile ? 'Editar Usuário' : 'Novo Usuário'}
+          </h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="w-6 h-6" />
           </button>
@@ -176,32 +214,36 @@ function UserModal({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email *
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            />
-          </div>
+          {!profile && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  required
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Senha *
-            </label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              minLength={6}
-              required
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Senha *
+                </label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  minLength={6}
+                  required
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -231,7 +273,7 @@ function UserModal({
               disabled={saving}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50"
             >
-              {saving ? 'Criando...' : 'Criar Usuário'}
+              {saving ? (profile ? 'Salvando...' : 'Criando...') : (profile ? 'Salvar' : 'Criar Usuário')}
             </button>
           </div>
         </form>
