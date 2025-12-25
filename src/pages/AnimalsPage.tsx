@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { supabase, Animal, Pen } from '../lib/supabase';
-import { Plus, Search, Filter, Edit, Trash2, X } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from "react";
+import { supabase, Animal, Pen } from "../lib/supabase";
+import { Plus, Search, Filter, Edit, Trash2, X } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function AnimalsPage() {
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -9,10 +9,10 @@ export default function AnimalsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState<Animal | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterBreed, setFilterBreed] = useState('');
-  const [filterSex, setFilterSex] = useState('');
-  const [filterStatus, setFilterStatus] = useState('active');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBreed, setFilterBreed] = useState("");
+  const [filterSex, setFilterSex] = useState("");
+  const [filterStatus, setFilterStatus] = useState("active");
   const { profile } = useAuth();
 
   useEffect(() => {
@@ -23,14 +23,14 @@ export default function AnimalsPage() {
   const loadAnimals = async () => {
     try {
       const { data, error } = await supabase
-        .from('animals')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("animals")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setAnimals(data || []);
     } catch (error) {
-      console.error('Error loading animals:', error);
+      console.error("Error loading animals:", error);
     } finally {
       setLoading(false);
     }
@@ -39,40 +39,40 @@ export default function AnimalsPage() {
   const loadPens = async () => {
     try {
       const { data, error } = await supabase
-        .from('pens')
-        .select('*')
-        .eq('active', true)
-        .order('name');
+        .from("pens")
+        .select("*")
+        .eq("active", true)
+        .order("name");
 
       if (error) throw error;
       setPens(data || []);
     } catch (error) {
-      console.error('Error loading pens:', error);
+      console.error("Error loading pens:", error);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este animal?')) return;
+    if (!window.confirm("Tem certeza que deseja excluir este animal?")) return;
 
     try {
-      const { error } = await supabase
-        .from('animals')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from("animals").delete().eq("id", id);
 
       if (error) throw error;
       loadAnimals();
     } catch (error) {
-      console.error('Error deleting animal:', error);
-      alert('Erro ao excluir animal');
+      console.error("Error deleting animal:", error);
+      alert("Erro ao excluir animal");
     }
   };
 
-  const breeds = [...new Set(animals.map(a => a.breed))];
+  const breeds = [...new Set(animals.map((a) => a.breed))];
 
-  const filteredAnimals = animals.filter(animal => {
-    const matchesSearch = animal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         animal.identification_number.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredAnimals = animals.filter((animal) => {
+    const matchesSearch =
+      animal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      animal.identification_number
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
     const matchesBreed = !filterBreed || animal.breed === filterBreed;
     const matchesSex = !filterSex || animal.sex === filterSex;
     const matchesStatus = !filterStatus || animal.status === filterStatus;
@@ -118,8 +118,10 @@ export default function AnimalsPage() {
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
             <option value="">Todas as raças</option>
-            {breeds.map(breed => (
-              <option key={breed} value={breed}>{breed}</option>
+            {breeds.map((breed) => (
+              <option key={breed} value={breed}>
+                {breed}
+              </option>
             ))}
           </select>
 
@@ -154,13 +156,27 @@ export default function AnimalsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">ID</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Raça</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Sexo</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Peso Atual</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Ações</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    ID
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Nome
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Raça
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Sexo
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Peso Atual
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Status
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -172,19 +188,36 @@ export default function AnimalsPage() {
                   </tr>
                 ) : (
                   filteredAnimals.map((animal) => (
-                    <tr key={animal.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm">{animal.identification_number}</td>
+                    <tr
+                      key={animal.id}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="py-3 px-4 text-sm">
+                        {animal.identification_number}
+                      </td>
                       <td className="py-3 px-4 font-medium">{animal.name}</td>
                       <td className="py-3 px-4 text-sm">{animal.breed}</td>
-                      <td className="py-3 px-4 text-sm">{animal.sex === 'male' ? 'Macho' : 'Fêmea'}</td>
-                      <td className="py-3 px-4 text-sm">{animal.current_weight} kg</td>
+                      <td className="py-3 px-4 text-sm">
+                        {animal.sex === "male" ? "Macho" : "Fêmea"}
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {animal.current_weight} kg
+                      </td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          animal.status === 'active' ? 'bg-green-100 text-green-700' :
-                          animal.status === 'sold' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
-                          {animal.status === 'active' ? 'Ativo' : animal.status === 'sold' ? 'Vendido' : 'Morto'}
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            animal.status === "active"
+                              ? "bg-green-100 text-green-700"
+                              : animal.status === "sold"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {animal.status === "active"
+                            ? "Ativo"
+                            : animal.status === "sold"
+                            ? "Vendido"
+                            : "Morto"}
                         </span>
                       </td>
                       <td className="py-3 px-4">
@@ -198,14 +231,12 @@ export default function AnimalsPage() {
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          {profile?.role === 'admin' && (
-                            <button
-                              onClick={() => handleDelete(animal.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
+                          <button
+                            onClick={() => handleDelete(animal.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -242,7 +273,7 @@ function AnimalModal({
   pens,
   animals,
   onClose,
-  onSave
+  onSave,
 }: {
   animal: Animal | null;
   pens: Pen[];
@@ -251,19 +282,19 @@ function AnimalModal({
   onSave: () => void;
 }) {
   const [formData, setFormData] = useState({
-    name: animal?.name || '',
-    identification_number: animal?.identification_number || '',
-    breed: animal?.breed || '',
-    sex: animal?.sex || 'male',
+    name: animal?.name || "",
+    identification_number: animal?.identification_number || "",
+    breed: animal?.breed || "",
+    sex: animal?.sex || "male",
     castrated: animal?.castrated || false,
-    father_id: animal?.father_id || '',
-    mother_id: animal?.mother_id || '',
-    photo_url: animal?.photo_url || '',
-    pen_id: animal?.pen_id || '',
-    entry_date: animal?.entry_date || new Date().toISOString().split('T')[0],
+    father_id: animal?.father_id || "",
+    mother_id: animal?.mother_id || "",
+    photo_url: animal?.photo_url || "",
+    pen_id: animal?.pen_id || "",
+    entry_date: animal?.entry_date || new Date().toISOString().split("T")[0],
     entry_weight: animal?.entry_weight || 0,
     current_weight: animal?.current_weight || 0,
-    status: animal?.status || 'active',
+    status: animal?.status || "active",
   });
   const [saving, setSaving] = useState(false);
 
@@ -282,21 +313,19 @@ function AnimalModal({
 
       if (animal) {
         const { error } = await supabase
-          .from('animals')
+          .from("animals")
           .update(data)
-          .eq('id', animal.id);
+          .eq("id", animal.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('animals')
-          .insert([data]);
+        const { error } = await supabase.from("animals").insert([data]);
         if (error) throw error;
       }
 
       onSave();
     } catch (error) {
-      console.error('Error saving animal:', error);
-      alert('Erro ao salvar animal');
+      console.error("Error saving animal:", error);
+      alert("Erro ao salvar animal");
     } finally {
       setSaving(false);
     }
@@ -304,11 +333,11 @@ function AnimalModal({
 
   // Filtrar animais disponíveis para seleção como pai/mãe
   // Excluir o animal atual se estiver editando (para evitar referências circulares)
-  const maleAnimals = animals.filter(a => 
-    a.sex === 'male' && (!animal || a.id !== animal.id)
+  const maleAnimals = animals.filter(
+    (a) => a.sex === "male" && (!animal || a.id !== animal.id)
   );
-  const femaleAnimals = animals.filter(a => 
-    a.sex === 'female' && (!animal || a.id !== animal.id)
+  const femaleAnimals = animals.filter(
+    (a) => a.sex === "female" && (!animal || a.id !== animal.id)
   );
 
   return (
@@ -316,9 +345,12 @@ function AnimalModal({
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
           <h3 className="text-xl font-semibold">
-            {animal ? 'Editar Animal' : 'Novo Animal'}
+            {animal ? "Editar Animal" : "Novo Animal"}
           </h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -332,7 +364,9 @@ function AnimalModal({
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
@@ -345,7 +379,12 @@ function AnimalModal({
               <input
                 type="text"
                 value={formData.identification_number}
-                onChange={(e) => setFormData({ ...formData, identification_number: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    identification_number: e.target.value,
+                  })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
@@ -358,7 +397,9 @@ function AnimalModal({
               <input
                 type="text"
                 value={formData.breed}
-                onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, breed: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="Ex: Nelore, Angus, etc"
                 required
@@ -371,7 +412,12 @@ function AnimalModal({
               </label>
               <select
                 value={formData.sex}
-                onChange={(e) => setFormData({ ...formData, sex: e.target.value as 'male' | 'female' })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sex: e.target.value as "male" | "female",
+                  })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               >
@@ -385,10 +431,14 @@ function AnimalModal({
                 <input
                   type="checkbox"
                   checked={formData.castrated}
-                  onChange={(e) => setFormData({ ...formData, castrated: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, castrated: e.target.checked })
+                  }
                   className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
                 />
-                <span className="text-sm font-medium text-gray-700">Castrado</span>
+                <span className="text-sm font-medium text-gray-700">
+                  Castrado
+                </span>
               </label>
             </div>
 
@@ -398,15 +448,21 @@ function AnimalModal({
               </label>
               <select
                 value={formData.father_id}
-                onChange={(e) => setFormData({ ...formData, father_id: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, father_id: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="">Selecione o pai</option>
                 {maleAnimals.length === 0 ? (
-                  <option value="" disabled>Nenhum animal macho cadastrado</option>
+                  <option value="" disabled>
+                    Nenhum animal macho cadastrado
+                  </option>
                 ) : (
-                  maleAnimals.map(a => (
-                    <option key={a.id} value={a.id}>{a.name} ({a.identification_number})</option>
+                  maleAnimals.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} ({a.identification_number})
+                    </option>
                   ))
                 )}
               </select>
@@ -418,15 +474,21 @@ function AnimalModal({
               </label>
               <select
                 value={formData.mother_id}
-                onChange={(e) => setFormData({ ...formData, mother_id: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, mother_id: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="">Selecione a mãe</option>
                 {femaleAnimals.length === 0 ? (
-                  <option value="" disabled>Nenhum animal fêmea cadastrado</option>
+                  <option value="" disabled>
+                    Nenhum animal fêmea cadastrado
+                  </option>
                 ) : (
-                  femaleAnimals.map(a => (
-                    <option key={a.id} value={a.id}>{a.name} ({a.identification_number})</option>
+                  femaleAnimals.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} ({a.identification_number})
+                    </option>
                   ))
                 )}
               </select>
@@ -438,7 +500,12 @@ function AnimalModal({
               </label>
               <select
                 value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as Animal['status'] })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    status: e.target.value as Animal["status"],
+                  })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="active">Ativo</option>
@@ -453,12 +520,16 @@ function AnimalModal({
               </label>
               <select
                 value={formData.pen_id}
-                onChange={(e) => setFormData({ ...formData, pen_id: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, pen_id: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="">Selecione a baia</option>
-                {pens.map(pen => (
-                  <option key={pen.id} value={pen.id}>{pen.name}</option>
+                {pens.map((pen) => (
+                  <option key={pen.id} value={pen.id}>
+                    {pen.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -470,7 +541,9 @@ function AnimalModal({
               <input
                 type="date"
                 value={formData.entry_date}
-                onChange={(e) => setFormData({ ...formData, entry_date: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, entry_date: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
@@ -484,7 +557,12 @@ function AnimalModal({
                 type="number"
                 step="0.01"
                 value={formData.entry_weight}
-                onChange={(e) => setFormData({ ...formData, entry_weight: parseFloat(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    entry_weight: parseFloat(e.target.value),
+                  })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
@@ -498,7 +576,12 @@ function AnimalModal({
                 type="number"
                 step="0.01"
                 value={formData.current_weight}
-                onChange={(e) => setFormData({ ...formData, current_weight: parseFloat(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    current_weight: parseFloat(e.target.value),
+                  })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
@@ -511,7 +594,9 @@ function AnimalModal({
               <input
                 type="url"
                 value={formData.photo_url}
-                onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, photo_url: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="https://exemplo.com/foto.jpg"
               />
@@ -531,7 +616,7 @@ function AnimalModal({
               disabled={saving}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50"
             >
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </form>

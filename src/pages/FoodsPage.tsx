@@ -1,12 +1,21 @@
-import { useState, useEffect } from 'react';
-import { supabase, Food } from '../lib/supabase';
-import { Plus, Edit, Trash2, X, Package, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from "react";
+import { supabase, Food } from "../lib/supabase";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Package,
+  TrendingUp,
+  TrendingDown,
+  AlertCircle,
+} from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 type StockMovement = {
   id: string;
   food_id: string;
-  movement_type: 'entry' | 'exit';
+  movement_type: "entry" | "exit";
   quantity: number;
   unit_cost: number;
   total_cost: number;
@@ -23,7 +32,9 @@ export default function FoodsPage() {
   const [showFoodModal, setShowFoodModal] = useState(false);
   const [showMovementModal, setShowMovementModal] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'foods' | 'movements'>('foods');
+  const [selectedTab, setSelectedTab] = useState<"foods" | "movements">(
+    "foods"
+  );
   const { profile } = useAuth();
 
   useEffect(() => {
@@ -34,14 +45,14 @@ export default function FoodsPage() {
   const loadFoods = async () => {
     try {
       const { data, error } = await supabase
-        .from('foods')
-        .select('*')
-        .order('name');
+        .from("foods")
+        .select("*")
+        .order("name");
 
       if (error) throw error;
       setFoods(data || []);
     } catch (error) {
-      console.error('Error loading foods:', error);
+      console.error("Error loading foods:", error);
     } finally {
       setLoading(false);
     }
@@ -50,43 +61,45 @@ export default function FoodsPage() {
   const loadMovements = async () => {
     try {
       const { data, error } = await supabase
-        .from('stock_movements')
-        .select('*, foods(*)')
-        .order('date', { ascending: false })
+        .from("stock_movements")
+        .select("*, foods(*)")
+        .order("date", { ascending: false })
         .limit(50);
 
       if (error) throw error;
       setMovements(data || []);
     } catch (error) {
-      console.error('Error loading movements:', error);
+      console.error("Error loading movements:", error);
     }
   };
 
   const handleDeleteFood = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja excluir este alimento?')) return;
+    if (!window.confirm("Tem certeza que deseja excluir este alimento?"))
+      return;
 
     try {
-      const { error } = await supabase
-        .from('foods')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from("foods").delete().eq("id", id);
 
       if (error) throw error;
       loadFoods();
     } catch (error) {
-      console.error('Error deleting food:', error);
-      alert('Erro ao excluir alimento');
+      console.error("Error deleting food:", error);
+      alert("Erro ao excluir alimento");
     }
   };
 
-  const lowStockFoods = foods.filter(f => f.current_stock <= f.min_stock);
+  const lowStockFoods = foods.filter((f) => f.current_stock <= f.min_stock);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Alimentos e Estoque</h2>
-          <p className="text-gray-600">Gerencie alimentos e movimentações de estoque</p>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Alimentos e Estoque
+          </h2>
+          <p className="text-gray-600">
+            Gerencie alimentos e movimentações de estoque
+          </p>
         </div>
         <div className="flex gap-2">
           <button
@@ -116,8 +129,12 @@ export default function FoodsPage() {
             <div>
               <h3 className="font-semibold text-amber-800">Estoque Baixo</h3>
               <p className="text-sm text-amber-700">
-                {lowStockFoods.length} {lowStockFoods.length === 1 ? 'alimento está' : 'alimentos estão'} com estoque abaixo do mínimo:
-                {' '}{lowStockFoods.map(f => f.name).join(', ')}
+                {lowStockFoods.length}{" "}
+                {lowStockFoods.length === 1
+                  ? "alimento está"
+                  : "alimentos estão"}{" "}
+                com estoque abaixo do mínimo:{" "}
+                {lowStockFoods.map((f) => f.name).join(", ")}
               </p>
             </div>
           </div>
@@ -128,21 +145,21 @@ export default function FoodsPage() {
         <div className="border-b border-gray-200">
           <div className="flex">
             <button
-              onClick={() => setSelectedTab('foods')}
+              onClick={() => setSelectedTab("foods")}
               className={`px-6 py-3 font-medium transition ${
-                selectedTab === 'foods'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                selectedTab === "foods"
+                  ? "border-b-2 border-green-600 text-green-600"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               Alimentos
             </button>
             <button
-              onClick={() => setSelectedTab('movements')}
+              onClick={() => setSelectedTab("movements")}
               className={`px-6 py-3 font-medium transition ${
-                selectedTab === 'movements'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                selectedTab === "movements"
+                  ? "border-b-2 border-green-600 text-green-600"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               Movimentações
@@ -155,42 +172,72 @@ export default function FoodsPage() {
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
             </div>
-          ) : selectedTab === 'foods' ? (
+          ) : selectedTab === "foods" ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Unidade</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Estoque Atual</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Estoque Mínimo</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Custo Unitário</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Ações</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Nome
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Unidade
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Estoque Atual
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Estoque Mínimo
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Custo Unitário
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Status
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Ações
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {foods.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="text-center py-8 text-gray-500">
+                      <td
+                        colSpan={7}
+                        className="text-center py-8 text-gray-500"
+                      >
                         Nenhum alimento cadastrado
                       </td>
                     </tr>
                   ) : (
                     foods.map((food) => (
-                      <tr key={food.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <tr
+                        key={food.id}
+                        className="border-b border-gray-100 hover:bg-gray-50"
+                      >
                         <td className="py-3 px-4 font-medium">{food.name}</td>
                         <td className="py-3 px-4 text-sm">{food.unit}</td>
-                        <td className="py-3 px-4 text-sm">{food.current_stock.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-sm">{food.min_stock.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-sm">R$ {food.unit_cost.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-sm">
+                          {food.current_stock.toFixed(2)}
+                        </td>
+                        <td className="py-3 px-4 text-sm">
+                          {food.min_stock.toFixed(2)}
+                        </td>
+                        <td className="py-3 px-4 text-sm">
+                          R$ {food.unit_cost.toFixed(2)}
+                        </td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            food.current_stock <= food.min_stock
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-green-100 text-green-700'
-                          }`}>
-                            {food.current_stock <= food.min_stock ? 'Estoque Baixo' : 'OK'}
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              food.current_stock <= food.min_stock
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
+                          >
+                            {food.current_stock <= food.min_stock
+                              ? "Estoque Baixo"
+                              : "OK"}
                           </span>
                         </td>
                         <td className="py-3 px-4">
@@ -204,14 +251,12 @@ export default function FoodsPage() {
                             >
                               <Edit className="w-4 h-4" />
                             </button>
-                            {profile?.role === 'admin' && (
-                              <button
-                                onClick={() => handleDeleteFood(food.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
+                            <button
+                              onClick={() => handleDeleteFood(food.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -228,13 +273,20 @@ export default function FoodsPage() {
                 </div>
               ) : (
                 movements.map((movement) => (
-                  <div key={movement.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                  <div
+                    key={movement.id}
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3">
-                        <div className={`p-2 rounded-lg ${
-                          movement.movement_type === 'entry' ? 'bg-green-100' : 'bg-red-100'
-                        }`}>
-                          {movement.movement_type === 'entry' ? (
+                        <div
+                          className={`p-2 rounded-lg ${
+                            movement.movement_type === "entry"
+                              ? "bg-green-100"
+                              : "bg-red-100"
+                          }`}
+                        >
+                          {movement.movement_type === "entry" ? (
                             <TrendingUp className="w-5 h-5 text-green-600" />
                           ) : (
                             <TrendingDown className="w-5 h-5 text-red-600" />
@@ -245,17 +297,24 @@ export default function FoodsPage() {
                             {movement.foods?.name}
                           </h4>
                           <p className="text-sm text-gray-600">
-                            {movement.movement_type === 'entry' ? 'Entrada' : 'Saída'} de {movement.quantity} {movement.foods?.unit}
+                            {movement.movement_type === "entry"
+                              ? "Entrada"
+                              : "Saída"}{" "}
+                            de {movement.quantity} {movement.foods?.unit}
                           </p>
                           {movement.notes && (
-                            <p className="text-sm text-gray-500 mt-1">{movement.notes}</p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {movement.notes}
+                            </p>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-800">R$ {movement.total_cost.toFixed(2)}</p>
+                        <p className="font-semibold text-gray-800">
+                          R$ {movement.total_cost.toFixed(2)}
+                        </p>
                         <p className="text-sm text-gray-500">
-                          {new Date(movement.date).toLocaleDateString('pt-BR')}
+                          {new Date(movement.date).toLocaleDateString("pt-BR")}
                         </p>
                       </div>
                     </div>
@@ -300,15 +359,15 @@ export default function FoodsPage() {
 function FoodModal({
   food,
   onClose,
-  onSave
+  onSave,
 }: {
   food: Food | null;
   onClose: () => void;
   onSave: () => void;
 }) {
   const [formData, setFormData] = useState({
-    name: food?.name || '',
-    unit: food?.unit || 'kg',
+    name: food?.name || "",
+    unit: food?.unit || "kg",
     current_stock: food?.current_stock || 0,
     min_stock: food?.min_stock || 0,
     unit_cost: food?.unit_cost || 0,
@@ -323,21 +382,19 @@ function FoodModal({
     try {
       if (food) {
         const { error } = await supabase
-          .from('foods')
+          .from("foods")
           .update(formData)
-          .eq('id', food.id);
+          .eq("id", food.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('foods')
-          .insert([formData]);
+        const { error } = await supabase.from("foods").insert([formData]);
         if (error) throw error;
       }
 
       onSave();
     } catch (error) {
-      console.error('Error saving food:', error);
-      alert('Erro ao salvar alimento');
+      console.error("Error saving food:", error);
+      alert("Erro ao salvar alimento");
     } finally {
       setSaving(false);
     }
@@ -348,9 +405,12 @@ function FoodModal({
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-xl font-semibold">
-            {food ? 'Editar Alimento' : 'Novo Alimento'}
+            {food ? "Editar Alimento" : "Novo Alimento"}
           </h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -363,7 +423,9 @@ function FoodModal({
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="Ex: Silagem, Ração, Sal"
               required
@@ -376,7 +438,9 @@ function FoodModal({
             </label>
             <select
               value={formData.unit}
-              onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, unit: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             >
@@ -395,7 +459,12 @@ function FoodModal({
               type="number"
               step="0.01"
               value={formData.current_stock}
-              onChange={(e) => setFormData({ ...formData, current_stock: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  current_stock: parseFloat(e.target.value),
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
@@ -408,7 +477,12 @@ function FoodModal({
               type="number"
               step="0.01"
               value={formData.min_stock}
-              onChange={(e) => setFormData({ ...formData, min_stock: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  min_stock: parseFloat(e.target.value),
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
@@ -421,7 +495,12 @@ function FoodModal({
               type="number"
               step="0.01"
               value={formData.unit_cost}
-              onChange={(e) => setFormData({ ...formData, unit_cost: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  unit_cost: parseFloat(e.target.value),
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             />
@@ -432,7 +511,9 @@ function FoodModal({
               <input
                 type="checkbox"
                 checked={formData.active}
-                onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, active: e.target.checked })
+                }
                 className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
               />
               <span className="text-sm font-medium text-gray-700">Ativo</span>
@@ -452,7 +533,7 @@ function FoodModal({
               disabled={saving}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50"
             >
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </form>
@@ -464,7 +545,7 @@ function FoodModal({
 function MovementModal({
   foods,
   onClose,
-  onSave
+  onSave,
 }: {
   foods: Food[];
   onClose: () => void;
@@ -472,16 +553,16 @@ function MovementModal({
 }) {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
-    food_id: '',
-    movement_type: 'entry' as 'entry' | 'exit',
+    food_id: "",
+    movement_type: "entry" as "entry" | "exit",
     quantity: 0,
     unit_cost: 0,
-    date: new Date().toISOString().split('T')[0],
-    notes: '',
+    date: new Date().toISOString().split("T")[0],
+    notes: "",
   });
   const [saving, setSaving] = useState(false);
 
-  const selectedFood = foods.find(f => f.id === formData.food_id);
+  const selectedFood = foods.find((f) => f.id === formData.food_id);
   const totalCost = formData.quantity * formData.unit_cost;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -490,33 +571,36 @@ function MovementModal({
 
     try {
       const { error: movementError } = await supabase
-        .from('stock_movements')
-        .insert([{
-          ...formData,
-          total_cost: totalCost,
-          created_by: user?.id
-        }]);
+        .from("stock_movements")
+        .insert([
+          {
+            ...formData,
+            total_cost: totalCost,
+            created_by: user?.id,
+          },
+        ]);
 
       if (movementError) throw movementError;
 
-      const food = foods.find(f => f.id === formData.food_id);
+      const food = foods.find((f) => f.id === formData.food_id);
       if (food) {
-        const newStock = formData.movement_type === 'entry'
-          ? food.current_stock + formData.quantity
-          : food.current_stock - formData.quantity;
+        const newStock =
+          formData.movement_type === "entry"
+            ? food.current_stock + formData.quantity
+            : food.current_stock - formData.quantity;
 
         const { error: updateError } = await supabase
-          .from('foods')
+          .from("foods")
           .update({ current_stock: newStock })
-          .eq('id', formData.food_id);
+          .eq("id", formData.food_id);
 
         if (updateError) throw updateError;
       }
 
       onSave();
     } catch (error) {
-      console.error('Error saving movement:', error);
-      alert('Erro ao salvar movimentação');
+      console.error("Error saving movement:", error);
+      alert("Erro ao salvar movimentação");
     } finally {
       setSaving(false);
     }
@@ -527,7 +611,10 @@ function MovementModal({
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-xl font-semibold">Nova Movimentação</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -540,18 +627,18 @@ function MovementModal({
             <select
               value={formData.food_id}
               onChange={(e) => {
-                const food = foods.find(f => f.id === e.target.value);
+                const food = foods.find((f) => f.id === e.target.value);
                 setFormData({
                   ...formData,
                   food_id: e.target.value,
-                  unit_cost: food?.unit_cost || 0
+                  unit_cost: food?.unit_cost || 0,
                 });
               }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             >
               <option value="">Selecione o alimento</option>
-              {foods.map(food => (
+              {foods.map((food) => (
                 <option key={food.id} value={food.id}>
                   {food.name} (Estoque: {food.current_stock} {food.unit})
                 </option>
@@ -565,7 +652,12 @@ function MovementModal({
             </label>
             <select
               value={formData.movement_type}
-              onChange={(e) => setFormData({ ...formData, movement_type: e.target.value as 'entry' | 'exit' })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  movement_type: e.target.value as "entry" | "exit",
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             >
@@ -582,7 +674,12 @@ function MovementModal({
               type="number"
               step="0.01"
               value={formData.quantity}
-              onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  quantity: parseFloat(e.target.value),
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             />
@@ -596,7 +693,12 @@ function MovementModal({
               type="number"
               step="0.01"
               value={formData.unit_cost}
-              onChange={(e) => setFormData({ ...formData, unit_cost: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  unit_cost: parseFloat(e.target.value),
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             />
@@ -609,7 +711,9 @@ function MovementModal({
             <input
               type="date"
               value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, date: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             />
@@ -621,7 +725,9 @@ function MovementModal({
             </label>
             <textarea
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               rows={3}
             />
@@ -629,7 +735,10 @@ function MovementModal({
 
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">
-              Total: <span className="font-semibold text-gray-800">R$ {totalCost.toFixed(2)}</span>
+              Total:{" "}
+              <span className="font-semibold text-gray-800">
+                R$ {totalCost.toFixed(2)}
+              </span>
             </p>
           </div>
 
@@ -646,7 +755,7 @@ function MovementModal({
               disabled={saving}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50"
             >
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </form>

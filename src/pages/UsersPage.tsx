@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { supabase, Profile } from '../lib/supabase';
-import { Plus, X, UserCog, Edit } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from "react";
+import { supabase, Profile } from "../lib/supabase";
+import { Plus, X, UserCog, Edit } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function UsersPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -11,34 +11,26 @@ export default function UsersPage() {
   const { profile } = useAuth();
 
   useEffect(() => {
-    if (profile?.role === 'admin') {
-      loadProfiles();
-    }
+    loadProfiles();
   }, [profile]);
 
   const loadProfiles = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('full_name');
+        .from("profiles")
+        .select("*")
+        .order("full_name");
 
       if (error) throw error;
       setProfiles(data || []);
     } catch (error) {
-      console.error('Error loading profiles:', error);
+      console.error("Error loading profiles:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (profile?.role !== 'admin') {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">Acesso negado. Somente administradores podem acessar esta página.</p>
-      </div>
-    );
-  }
+  // Removida restrição de admin - todos os usuários autenticados podem acessar
 
   return (
     <div className="space-y-6">
@@ -66,10 +58,18 @@ export default function UsersPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Função</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Data de Criação</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Ações</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Nome
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Função
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Data de Criação
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -81,17 +81,28 @@ export default function UsersPage() {
                   </tr>
                 ) : (
                   profiles.map((user) => (
-                    <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium">{user.full_name}</td>
+                    <tr
+                      key={user.id}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="py-3 px-4 font-medium">
+                        {user.full_name}
+                      </td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {user.role === 'admin' ? 'Administrador' : 'Funcionário'}
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            user.role === "admin"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {user.role === "admin"
+                            ? "Administrador"
+                            : "Funcionário"}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-600">
-                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(user.created_at).toLocaleDateString("pt-BR")}
                       </td>
                       <td className="py-3 px-4">
                         <button
@@ -135,7 +146,7 @@ export default function UsersPage() {
 function UserModal({
   profile,
   onClose,
-  onSave
+  onSave,
 }: {
   profile?: Profile | null;
   onClose: () => void;
@@ -143,40 +154,47 @@ function UserModal({
 }) {
   const { signUp } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    full_name: profile?.full_name || '',
-    role: (profile?.role || 'employee') as 'admin' | 'employee',
+    email: "",
+    password: "",
+    full_name: profile?.full_name || "",
+    role: (profile?.role || "employee") as "admin" | "employee",
   });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setSaving(true);
 
     try {
       if (profile) {
         // Atualizar usuário existente
         const { error: updateError } = await supabase
-          .from('profiles')
+          .from("profiles")
           .update({
             full_name: formData.full_name,
             role: formData.role,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', profile.id);
+          .eq("id", profile.id);
 
         if (updateError) throw updateError;
       } else {
         // Criar novo usuário
-        await signUp(formData.email, formData.password, formData.full_name, formData.role);
+        await signUp(
+          formData.email,
+          formData.password,
+          formData.full_name,
+          formData.role
+        );
       }
       onSave();
     } catch (err: any) {
-      console.error('Error saving user:', err);
-      setError(err.message || `Erro ao ${profile ? 'atualizar' : 'criar'} usuário`);
+      console.error("Error saving user:", err);
+      setError(
+        err.message || `Erro ao ${profile ? "atualizar" : "criar"} usuário`
+      );
     } finally {
       setSaving(false);
     }
@@ -187,9 +205,12 @@ function UserModal({
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-xl font-semibold">
-            {profile ? 'Editar Usuário' : 'Novo Usuário'}
+            {profile ? "Editar Usuário" : "Novo Usuário"}
           </h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -208,7 +229,9 @@ function UserModal({
             <input
               type="text"
               value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, full_name: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             />
@@ -223,7 +246,9 @@ function UserModal({
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
                 />
@@ -236,7 +261,9 @@ function UserModal({
                 <input
                   type="password"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   minLength={6}
                   required
@@ -251,7 +278,12 @@ function UserModal({
             </label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'employee' })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  role: e.target.value as "admin" | "employee",
+                })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             >
@@ -273,7 +305,13 @@ function UserModal({
               disabled={saving}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50"
             >
-              {saving ? (profile ? 'Salvando...' : 'Criando...') : (profile ? 'Salvar' : 'Criar Usuário')}
+              {saving
+                ? profile
+                  ? "Salvando..."
+                  : "Criando..."
+                : profile
+                ? "Salvar"
+                : "Criar Usuário"}
             </button>
           </div>
         </form>
